@@ -1,0 +1,15 @@
+{
+  "editor.autoClosingQuotes": "always",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.oxc": "explicit"
+  },
+  "editor.defaultFormatter": "oxc.oxc-vscode",
+  "editor.formatOnSave": true,
+  "editor.formatOnSaveMode": "file",
+  "editor.minimap.enabled": false,
+  "github.copilot.chat.commitMessageGeneration.instructions": [
+    {
+      "file": ".github/copilot.chat.commitMessageGeneration.instructions.md"
+    }
+  ]
+}

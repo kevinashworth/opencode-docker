@@ -1,0 +1,36 @@
+services:
+  opencode:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      # Persist OpenCode config, data and state (no host access)
+      - opencode_home:/home/node/.opencode
+      - opencode_data:/home/node/.local/share/opencode
+      - opencode_state:/home/node/.local/state/opencode
+      # Persist zsh history inside a Docker volume (no host access)
+      # dedicated volume avoids overlapping mounts under /home/node/.local
+      - zsh_history:/home/node/.zsh-history
+      # Host-accessible config file (bind mount) for opencode.json
+      - ./dotconfig/opencode/opencode.json:/home/node/.config/opencode/opencode.json:ro
+      # SSH keys, .gitconfig, and host dotfiles are intentionally NOT mounted.
+      # This container is isolated from your personal credentials by design.
+    environment:
+      - DEBIAN_FRONTEND=noninteractive
+      - WORKSPACE_ROOT=${WORKSPACE_ROOT:-/workspace}
+    stdin_open: true
+    tty: true
+    # Keep container running
+    command: zsh
+    # Runtime user is uid/gid 1000 from the base node:24 image.
+
+# Named volumes for persistent data
+volumes:
+  opencode_home:
+    driver: local
+  opencode_data:
+    driver: local
+  opencode_state:
+    driver: local
+  zsh_history:
+    driver: local

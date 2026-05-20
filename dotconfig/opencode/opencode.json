@@ -1,0 +1,62 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "permission": {
+    "read": {
+      "*": "allow",
+      "*.env": "deny",
+      "*.env.*": "deny",
+      "*.env.example": "allow"
+    },
+    "edit": "ask",
+    "glob": "allow",
+    "grep": "allow",
+    "list": "allow",
+    "bash": {
+      "*": "ask",
+      "git status *": "allow",
+      "git diff *": "allow",
+      "git log *": "allow",
+      "git commit *": "ask",
+      "git push *": "ask",
+      "npm install *": "ask",
+      "npm run check:types *": "allow",
+      "npm run check:spell *": "allow",
+      "npm run lint *": "allow",
+      "npm run typecheck *": "allow",
+      "npm run test *": "allow",
+      "npm run test:run *": "allow",
+      "npx *": "ask",
+      "rm -rf *": "deny"
+    },
+    "task": "ask",
+    "skill": "deny",
+    "lsp": "ask",
+    "todoread": "allow",
+    "todowrite": "ask",
+    "webfetch": "allow",
+    "websearch": "ask",
+    "codesearch": "ask",
+    "external_directory": "ask",
+    "doom_loop": "ask"
+  },
+  "agent": {
+    "code-reviewer": {
+      "description": "Reviews code for best practices and potential issues",
+      "mode": "subagent",
+      "prompt": "You are a code reviewer. Focus on security, performance, and maintainability. If you find a security issue, delegate to @security-engineer.",
+      "tools": {
+        "write": false,
+        "edit": false
+      }
+    },
+    "security-engineer": {
+      "description": "Reviews code for best practices and potential issues",
+      "mode": "subagent",
+      "prompt": "You are a security engineer. Focus on security. You'll be given tasks to figure out, whether there's a risky code snippet, or a CVE we need to address with versions.",
+      "tools": {
+        "write": false,
+        "edit": false
+      }
+    }
+  }
+}

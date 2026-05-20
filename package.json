@@ -1,0 +1,20 @@
+{
+  "name": "opencode-docker",
+  "version": "0.1.0",
+  "description": "Dev container configuration for using Docker and OpenCode",
+  "scripts": {
+    "projects:generate": "bash scripts/generate-compose-project-mounts.sh",
+    "compose:config": "npm run projects:generate && docker compose -f docker-compose.yml -f docker-compose.projects.yml config",
+    "up": "npm run projects:generate && docker compose -f docker-compose.yml -f docker-compose.projects.yml up -d",
+    "down": "docker compose -f docker-compose.yml -f docker-compose.projects.yml down",
+    "down:volumes": "docker compose -f docker-compose.yml -f docker-compose.projects.yml down -v",
+    "logs": "docker compose -f docker-compose.yml -f docker-compose.projects.yml logs -f",
+    "rebuild": "npm run projects:generate && docker compose -f docker-compose.yml -f docker-compose.projects.yml up -d --build",
+    "shell": "docker compose -f docker-compose.yml -f docker-compose.projects.yml exec opencode /usr/local/bin/entrypoint.sh zsh",
+    "fmt": "oxfmt",
+    "fmt:check": "oxfmt --check"
+  },
+  "devDependencies": {
+    "oxfmt": "0.50.0"
+  }
+}

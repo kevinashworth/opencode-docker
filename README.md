@@ -120,7 +120,7 @@ OpenCode runs with exactly the tools and context you give it — nothing more. Y
 
 The container runs as non-root uid/gid `1000` from the base `node:24` image (the upstream `node` user).
 
-This follows the official Docker Node guidance for non-root operation: https://github.com/nodejs/docker-node/blob/main/docs/BestPractices.md#non-root-user
+This follows the official Docker Node guidance for non-root operation: <https://github.com/nodejs/docker-node/blob/main/docs/BestPractices.md#non-root-user>
 
 This keeps day-to-day shell usage non-root while still allowing predictable ownership for mounted files and Docker volumes.
 
@@ -151,6 +151,8 @@ The `:ro` flag prevents the container from modifying those mounted credentials. 
 - `opencode_data` -> `/home/node/.local/share/opencode`
 - `opencode_state` -> `/home/node/.local/state/opencode`
 - `zsh_history` -> `/home/node/.zsh-history` (history file lives at `/home/node/.zsh-history/.zsh_history`)
+
+See [DEVELOPMENT.md](DEVELOPMENT.md) for versioning and release instructions.
 
 ## Non-goals
 

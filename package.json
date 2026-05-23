@@ -12,9 +12,20 @@
     "rebuild": "npm run projects:generate && docker compose -f docker-compose.yml -f docker-compose.projects.yml up -d --build",
     "shell": "docker compose -f docker-compose.yml -f docker-compose.projects.yml exec opencode /usr/local/bin/entrypoint.sh zsh",
     "fmt": "oxfmt",
-    "fmt:check": "oxfmt --check"
+    "fmt:check": "oxfmt --check",
+    "release": "release-it",
+    "release:patch": "release-it --release-as patch",
+    "release:minor": "release-it --release-as minor",
+    "release:major": "release-it --release-as major",
+    "release:dry": "release-it --dry-run",
+    "prepare": "husky"
   },
   "devDependencies": {
-    "oxfmt": "0.50.0"
+    "@commitlint/cli": "21.0.1",
+    "@commitlint/config-conventional": "21.0.1",
+    "@release-it/conventional-changelog": "11.0.0",
+    "husky": "9.1.7",
+    "oxfmt": "0.50.0",
+    "release-it": "20.0.1"
   }
 }

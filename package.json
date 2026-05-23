@@ -1,6 +1,6 @@
 {
   "name": "opencode-docker",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Dev container configuration for using Docker and OpenCode",
   "scripts": {
     "projects:generate": "bash scripts/generate-compose-project-mounts.sh",

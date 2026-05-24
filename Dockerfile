@@ -50,7 +50,7 @@ RUN git config --global --add safe.directory /home/linuxbrew/.linuxbrew/Homebrew
 
 USER linuxbrew
 RUN brew update && \
-    brew install eza fzf zoxide anomalyco/tap/opencode && \
+    brew install eza fzf lazygit zoxide anomalyco/tap/opencode && \
     brew cleanup -s
 USER root
 

@@ -19,7 +19,7 @@ services:
       # SSH keys, .gitconfig, and host dotfiles are intentionally NOT mounted.
       # This container is isolated from your personal credentials by design.
     environment:
-      - DEBIAN_FRONTEND=noninteractive
+      - COLORTERM=truecolor
       - WORKSPACE_ROOT=${WORKSPACE_ROOT:-/workspace}
     stdin_open: true
     tty: true

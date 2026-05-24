@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.0](https://codeberg.org/kevthedev/opencode-docker/compare/v0.2.0...v0.3.0) (2026-05-24)
+
+### Features
+
+* **docker:** add lazygit and enable truecolor terminal support ([46232b6](https://codeberg.org/kevthedev/opencode-docker/commit/46232b6da571d4c21f50c52875e2369d96ae61b1))
+
 ## 0.2.0 (2026-05-23)
 
 ### Features

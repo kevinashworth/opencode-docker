@@ -89,7 +89,9 @@ The generator script validates:
 - Invalid folder names are rejected.
 - Missing host paths are rejected.
 
-The entrypoint dynamically prints discovered project directories under `/workspace`.
+On startup, the entrypoint prints project directories under `/workspace`.
+
+The TUI theme is set in `dotconfig/opencode/tui.json`; available themes are in `dotconfig/opencode/themes/`.
 
 ### Custom Environment Variables
 

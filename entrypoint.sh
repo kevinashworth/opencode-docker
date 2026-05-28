@@ -26,32 +26,19 @@ workspace_root="${WORKSPACE_ROOT:-/workspace}"
 echo "Container: ${HOSTNAME:-unknown}"
 echo "Workspace root: ${workspace_root}"
 
-# Build host path mapping from projects.env (mounted by compose)
-typeset -A host_paths
-if [ -f "/home/node/.config/opencode/projects.env" ]; then
-    while IFS='=' read -r name host_path; do
-        [[ "$name" == \#* || -z "$name" ]] && continue
-        host_paths[$name]=$host_path
-    done < /home/node/.config/opencode/projects.env
-fi
-
 project_count=0
 if [ -d "$workspace_root" ]; then
     while IFS= read -r project_dir; do
         project_name="$(basename "$project_dir")"
-        if [[ "${host_paths[$project_name]}" != "" ]]; then
-            echo "- ${project_name}: ${host_paths[$project_name]}"
-        else
-            echo "- ${project_name}: ${project_dir}"
-        fi
+        echo "- ${project_name}: ${project_dir}"
         project_count=$((project_count + 1))
     done < <(find "$workspace_root" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | sort)
 fi
 
 if [ "$project_count" -eq 0 ]; then
     echo "No project mounts found under ${workspace_root}."
-    echo "Hint: add projects to projects.env and restart the container."
-    echo "Hint: cp projects.env.example projects.env"
+    echo "Hint: add projects to config.env and restart the container."
+    echo "Hint: cp config.env.example config.env"
 fi
 echo ""
 echo "OpenCode $(opencode --version)"

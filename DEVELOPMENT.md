@@ -1,5 +1,17 @@
 # Development Notes
 
+## Testing
+
+The `config.env` generator has a test suite:
+
+```sh
+npm run test:config
+```
+
+Tests use a temporary directory and clean up on exit (no side effects).
+
+The generator is [`scripts/generate-compose-override.js`](scripts/generate-compose-override.js). The test file is [`scripts/generate-compose-override.test.js`](scripts/generate-compose-override.test.js). Both use Node.js built-in modules only (no external dependencies).
+
 ## Versioning
 
 This project uses [Semantic Versioning](https://semver.org/) with [Conventional Commits](https://www.conventionalcommits.org/).

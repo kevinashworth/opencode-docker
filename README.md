@@ -10,26 +10,21 @@ Docker-based OpenCode development environment with zsh tooling, persistent OpenC
 
 ## First Run
 
-1. Create your local project manifest.
+1. Create your configuration file.
 
 ```sh
-cp projects.env.example projects.env
+cp config.env.example config.env
 ```
 
-2. Edit `projects.env` and add the projects you want mounted.
+2. Edit `config.env` and add the projects you want mounted.
 
-3. Generate project mounts and validate compose config.
+3. Generate the Compose override and validate the merged config.
 
 ```sh
 npm run compose:config
 ```
 
 4. Start the container.
-
-**Timezone Notice:**
-By default, the container sets `TZ=America/New_York`. If you are in a different timezone, edit the `TZ` variable in the Dockerfile to match your local timezone (e.g., `Europe/Berlin`), or remove it for UTC.
-
-On first startup, Docker Compose builds the image if it does not exist yet. If the image already exists locally, this command reuses it and does not force a rebuild. So after making changes to Dockerfile, run `npm run rebuild` then `npm run up`.
 
 ```sh
 npm run up
@@ -41,14 +36,16 @@ npm run up
 npm run shell
 ```
 
-## Unlimited Project Mounts
+## Configuration
 
-This repo supports any number of projects. Project mounts are generated from `projects.env` into `docker-compose.projects.yml` automatically by most commands. You rarely need to run `npm run projects:generate` directly; use it only if you want to regenerate the file without starting containers or validating config.
+All configuration lives in a single **`config.env`** file (gitignored). A generator script reads it and produces `docker-compose.override.yml` (also gitignored), which is merged with `docker-compose.yml` at runtime.
 
-If you want to run Docker Compose manually, use both compose files together:
+You rarely need to run `npm run config:generate` directly — it runs automatically before `up`, `rebuild`, and `compose:config`.
+
+If you run Docker Compose manually, use both files together:
 
 ```sh
-docker compose -f docker-compose.yml -f docker-compose.projects.yml up -d
+docker compose -f docker-compose.yml -f docker-compose.override.yml up -d
 ```
 
 ## Build and Rebuild Behavior
@@ -56,11 +53,63 @@ docker compose -f docker-compose.yml -f docker-compose.projects.yml up -d
 - `npm run up`: Starts containers and uses the current local image. Builds only if the image is missing.
 - `npm run rebuild`: Forces an image rebuild and then starts containers (`up -d --build`).
 - Use `npm run rebuild` after changing `Dockerfile`, `entrypoint.sh`, dotfiles copied into the image, or installed tooling.
-- Use `npm run up` for normal daily start/stop cycles when the image does not need to change.
+- Use `npm run up` and `npm run down` for normal daily start/stop cycles when the image does not need to change.
 
-## Manifest Format
+## Config File Format
 
-In `projects.env`, each non-comment line is:
+In `config.env`, each non-comment line is a `key=value` entry. The generator recognizes four categories:
+
+### Timezone
+
+```text
+TZ=Europe/Berlin
+```
+
+Sets the container runtime timezone. Defaults to `America/New_York` (from the Dockerfile) if unset.
+
+### SSH Credentials
+
+```text
+SSH_PRIVATE_KEY=~/.ssh/opencode/id_ed25519
+SSH_PUBLIC_KEY=~/.ssh/opencode/id_ed25519.pub
+```
+
+Mounts dedicated SSH keys into the container (both `:ro`). The target path mirrors the source filename — `~/.ssh/id_rsa` becomes `/home/node/.ssh/id_rsa`, `~/.ssh/opencode/id_ed25519` becomes `/home/node/.ssh/id_ed25519`.
+
+**Use dedicated, scoped keys only** — do not mount your personal `~/.ssh`.
+
+### SSH known_hosts policy
+
+This project requires host trust to be stored in `/home/node/.ssh/known_hosts`.
+
+If SSH reports it cannot write `known_hosts`, fix only the SSH directory and known_hosts file (do not use recursive `chown` because mounted key files are read-only):
+
+```sh
+docker compose exec -u root opencode sh -lc 'mkdir -p /home/node/.ssh && chown node:node /home/node/.ssh && touch /home/node/.ssh/known_hosts && chown node:node /home/node/.ssh/known_hosts && chmod 700 /home/node/.ssh && chmod 600 /home/node/.ssh/known_hosts'
+```
+
+#### Troubleshooting
+
+If `npm run shell` shows permission errors for `/home/node/.ssh` or `/home/node/.ssh/known_hosts`, run the command above once, then restart the container:
+
+```sh
+npm run down && npm run up
+```
+
+### Custom Environment Variables
+
+Any line starting with `env:` is injected as a runtime environment variable (the prefix is stripped):
+
+```text
+env:EDITOR=vim
+env:NODE_ENV=development
+```
+
+The `env:` prefix distinguishes environment variables from project mount entries, which use the same `name=value` syntax but point to host directories.
+
+### Project Mounts
+
+Everything else is treated as a project mount:
 
 ```text
 container_folder_name=/absolute/or/relative/host/path
@@ -80,30 +129,28 @@ Generated mounts become:
 - `/workspace/api`
 - `/workspace/ui`
 
-## Behavior and Validation
+### Validation
 
-The generator script validates:
+The generator validates:
 
+- The config file exists (create it from `config.env.example` if missing).
 - Empty lines and comments are ignored.
-- Duplicate container folder names are rejected.
-- Invalid folder names are rejected.
-- Missing host paths are rejected.
+- Duplicate project names are rejected.
+- Invalid project names are rejected.
+- Missing host paths or SSH key files are rejected.
 
 On startup, the entrypoint prints project directories under `/workspace`.
 
 The TUI theme is set in `dotconfig/opencode/tui.json`; available themes are in `dotconfig/opencode/themes/`.
 
-### Custom Environment Variables
-
-If you want to inject custom environment variables at container startup, create a file at `/home/node/.opencode/env` inside the container. This file will be sourced automatically by the entrypoint script.
-
 ## Core Commands
 
 ```sh
-npm run projects:generate   # regenerate docker-compose.projects.yml only
-npm run compose:config      # regenerate mounts + validate merged compose config
-npm run up                  # regenerate mounts + start (detached)
-npm run rebuild             # regenerate mounts + rebuild image + start
+npm run config:generate     # regenerate docker-compose.override.yml only
+npm run test:config         # run the generator test suite (22 tests)
+npm run compose:config      # regenerate override + validate merged compose config
+npm run up                  # regenerate override + start (detached)
+npm run rebuild             # regenerate override + rebuild image + start
 npm run shell               # open zsh in the running container
 npm run logs                # tail container logs
 npm run down                # stop and remove containers
@@ -114,9 +161,9 @@ npm run down:volumes        # stop and remove containers AND DELETE ALL persiste
 
 ### Isolation by Design
 
-This container intentionally has no access to your SSH keys, `.gitconfig`, `.env` files, or any other host dotfiles. That is the point.
+This container starts with no access to your host dotfiles — no SSH keys, no `.gitconfig`, no personal credentials. That's intentional.
 
-OpenCode runs with exactly the tools and context you give it — nothing more. Your credentials, tokens, and personal configuration stay on your host. If a workflow requires git authentication inside the container, provision a dedicated key or token scoped only to that use case and mount it explicitly.
+If your workflow needs git or SSH authentication inside the container, you opt into it explicitly through `config.env` using a dedicated, scoped key created specifically for this environment. Do not mount your personal `~/.ssh`.
 
 ### Runtime User Model
 
@@ -132,15 +179,16 @@ Runtime state and config live under `/home/node`.
 
 ### How to Override Isolation by Design
 
-If you must enable git authentication inside the container, mount dedicated credentials created specifically for this environment. Do not mount your personal `~/.ssh` or `~/.gitconfig`.
+If you must enable git or SSH authentication inside the container, set `SSH_PRIVATE_KEY` (and optionally `SSH_PUBLIC_KEY`) in `config.env` to point to a dedicated key created specifically for this environment:
 
-```yaml
-volumes:
-  - /path/to/opencode-only/id_ed25519:/home/node/.ssh/id_ed25519:ro
-  - /path/to/opencode-only/gitconfig:/home/node/.gitconfig:ro
+```text
+SSH_PRIVATE_KEY=~/.ssh/opencode/id_ed25519
+SSH_PUBLIC_KEY=~/.ssh/opencode/id_ed25519.pub
 ```
 
-The `:ro` flag prevents the container from modifying those mounted credentials. Keep them narrowly scoped and separate from your personal workstation identity.
+The keys are mounted with `:ro` to prevent the container from modifying them. Keep them narrowly scoped and separate from your personal workstation identity.
+
+If you also need a custom `.gitconfig`, mount it by adding a volume entry to `docker-compose.override.yml` directly (the generator does not produce arbitrary file mounts).
 
 ## Container Naming
 

@@ -1,5 +1,7 @@
 # Changelog
 
+## [0.4.1](https://codeberg.org/kevthedev/opencode-docker/compare/v0.4.0...v0.4.1) (2026-05-30)
+
 ## 0.4.0 (2026-05-28)
 
 ### Features

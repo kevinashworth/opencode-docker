@@ -1,11 +1,12 @@
 {
   "git": {
     "commitMessage": "chore(release): v${version}",
+    "tagMatch": "v*",
     "tagName": "v${version}",
-    "tagAnnotation": "v${version}",
+    "tag": false,
+    "push": false,
     "requireCommits": true,
     "requireCleanWorkingDir": true,
-    "push": false,
     "requireUpstream": false
   },
   "npm": {

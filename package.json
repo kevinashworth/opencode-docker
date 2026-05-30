@@ -1,6 +1,6 @@
 {
   "name": "opencode-docker",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Dev container configuration for using Docker and OpenCode",
   "scripts": {
     "config:generate": "node scripts/generate-compose-override.js",
@@ -14,10 +14,8 @@
     "shell": "docker compose -f docker-compose.yml -f docker-compose.override.yml exec opencode /usr/local/bin/entrypoint.sh zsh",
     "fmt": "oxfmt",
     "fmt:check": "oxfmt --check",
-    "release": "release-it",
-    "release:patch": "release-it --release-as patch",
-    "release:minor": "release-it --release-as minor",
-    "release:major": "release-it --release-as major",
+    "release:prepare": "git branch --show-current | grep -qv '^main$' || { echo 'ERROR: prepare release on a feature branch, not main'; exit 1; } && release-it --ci",
+    "release:tag": "git branch --show-current | grep -q '^main$' || { echo 'ERROR: tag on main after merge'; exit 1; } && git tag v$(node -p \"require('./package.json').version\") && git push origin --tags",
     "release:dry": "release-it --dry-run",
     "prepare": "husky"
   },

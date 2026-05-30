@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.5.0](https://github.com/kevinashworth/opencode-docker/compare/v0.4.2...v0.5.0) (2026-05-30)
+
+### Features
+
+* **skills:** add atomic-commits skill ([ed56d98](https://github.com/kevinashworth/opencode-docker/commit/ed56d982c50953da98b64c24266044929ddc5917))
+* **skills:** add code-review skill ([e916df3](https://github.com/kevinashworth/opencode-docker/commit/e916df37d47e10486172b749908062cea19aae69))
+* **skills:** add code-simplifier skill ([09bf0bc](https://github.com/kevinashworth/opencode-docker/commit/09bf0bc9b8da002c42f25b1a4d3b545f07d2efa1))
+
+### Bug Fixes
+
+* **audit:** correct typo 'often' to 'offer' ([bdea2bf](https://github.com/kevinashworth/opencode-docker/commit/bdea2bfe8b5c156ce0bd05e951773ccbc38c7ca2))
+
 ## [0.4.2](https://codeberg.org/kevthedev/opencode-docker/compare/v0.4.1...v0.4.2) (2026-05-30)
 
 ## [0.4.1](https://codeberg.org/kevthedev/opencode-docker/compare/v0.4.0...v0.4.1) (2026-05-30)

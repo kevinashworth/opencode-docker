@@ -1,4 +1,8 @@
 .DS_Store
 node_modules
-projects.env
-docker-compose.projects.yml
+
+# User configuration
+config.env
+
+# Generated Compose overrides
+docker-compose.override.yml

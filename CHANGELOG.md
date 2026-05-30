@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.0 (2026-05-28)
+
+### Features
+
+* **config:** unify all user configuration into single config.env ([3e8cc4b](https://codeberg.org/kevthedev/opencode-docker/commit/3e8cc4b21161876d798dc3e65a7cec7058432a9e))
+
 ## [0.3.0](https://codeberg.org/kevthedev/opencode-docker/compare/v0.2.0...v0.3.0) (2026-05-24)
 
 ### Features

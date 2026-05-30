@@ -14,10 +14,8 @@ services:
       # Host-accessible config file (bind mount) for opencode.json
       - ./dotconfig/opencode/opencode.json:/home/node/.config/opencode/opencode.json:ro
       - ./dotconfig/opencode/tui.json:/home/node/.config/opencode/tui.json:ro
-      # Project mount manifest used by entrypoint to display host paths
-      - ./projects.env:/home/node/.config/opencode/projects.env:ro
-      # SSH keys, .gitconfig, and host dotfiles are intentionally NOT mounted.
-      # This container is isolated from your personal credentials by design.
+      # Config manifest (timezone, SSH keys, project mounts, custom env vars)
+      - ./config.env:/home/node/.config/opencode/config.env:ro
     environment:
       - COLORTERM=truecolor
       - WORKSPACE_ROOT=${WORKSPACE_ROOT:-/workspace}

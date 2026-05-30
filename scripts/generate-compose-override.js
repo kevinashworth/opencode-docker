@@ -1,19 +1,19 @@
 #!/usr/bin/env node
-const fs = require('fs');
-const path = require('path');
-const os = require('os');
+const fs = require("fs");
+const path = require("path");
+const os = require("os");
 
-const configFile = process.argv[2] || 'config.env';
-const outputFile = process.argv[3] || 'docker-compose.override.yml';
-const serviceName = process.env.COMPOSE_SERVICE_NAME || 'opencode';
-const workspaceRoot = process.env.WORKSPACE_ROOT || '/workspace';
+const configFile = process.argv[2] || "config.env";
+const outputFile = process.argv[3] || "docker-compose.override.yml";
+const serviceName = process.env.COMPOSE_SERVICE_NAME || "opencode";
+const workspaceRoot = process.env.WORKSPACE_ROOT || "/workspace";
 
 function escapeYaml(value) {
-  return value.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+  return value.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
 }
 
 function resolveRawPath(rawPath, baseDir) {
-  if (rawPath.startsWith('~')) {
+  if (rawPath.startsWith("~")) {
     rawPath = os.homedir() + rawPath.slice(1);
   }
   return path.resolve(baseDir, rawPath);
@@ -51,93 +51,107 @@ let projectCount = 0;
 let sshCount = 0;
 
 if (!fs.existsSync(configFile)) {
-  console.error('Config file not found: ' + configFile);
-  console.error('Create it from config.env.example first.');
+  console.error("Config file not found: " + configFile);
+  console.error("Create it from config.env.example first.");
   process.exit(1);
 }
 
 const configDir = path.resolve(path.dirname(configFile));
 
-const content = fs.readFileSync(configFile, 'utf8');
-const lines = content.split('\n');
+const content = fs.readFileSync(configFile, "utf8");
+const lines = content.split("\n");
 let lineNumber = 0;
 
 for (const rawLine of lines) {
   lineNumber++;
   const line = rawLine.trim();
 
-  if (line === '' || line.startsWith('#')) continue;
+  if (line === "" || line.startsWith("#")) continue;
 
-  if (!line.includes('=')) {
-    errors.push('Invalid entry at line ' + lineNumber + ': missing \'=\'');
+  if (!line.includes("=")) {
+    errors.push("Invalid entry at line " + lineNumber + ": missing '='");
     continue;
   }
 
-  const eqIndex = line.indexOf('=');
+  const eqIndex = line.indexOf("=");
   const key = line.slice(0, eqIndex).trim();
   const value = line.slice(eqIndex + 1).trim();
 
-  if (key === '') {
-    errors.push('Invalid entry at line ' + lineNumber + ': key is empty');
+  if (key === "") {
+    errors.push("Invalid entry at line " + lineNumber + ": key is empty");
     continue;
   }
 
-  if (value === '') {
-    errors.push('Invalid entry at line ' + lineNumber + ': value is empty');
+  if (value === "") {
+    errors.push("Invalid entry at line " + lineNumber + ": value is empty");
     continue;
   }
 
-  if (key === 'TZ') {
-    envVars.push('TZ=' + value);
+  if (key === "TZ") {
+    envVars.push("TZ=" + value);
     envCount++;
-  } else if (key === 'SSH_PRIVATE_KEY') {
+  } else if (key === "SSH_PRIVATE_KEY") {
     const resolved = resolveFilePath(value, configDir);
     if (!resolved) {
-      errors.push('SSH_PRIVATE_KEY file does not exist at line ' + lineNumber + ': ' + value);
+      errors.push("SSH_PRIVATE_KEY file does not exist at line " + lineNumber + ": " + value);
       continue;
     }
     const keyName = path.basename(resolved);
-    sshVolumes.push(resolved + ':/home/node/.ssh/' + keyName + ':ro');
+    sshVolumes.push(resolved + ":/home/node/.ssh/" + keyName + ":ro");
     sshCount++;
-  } else if (key === 'SSH_PUBLIC_KEY') {
+  } else if (key === "SSH_PUBLIC_KEY") {
     const resolved = resolveFilePath(value, configDir);
     if (!resolved) {
-      errors.push('SSH_PUBLIC_KEY file does not exist at line ' + lineNumber + ': ' + value);
+      errors.push("SSH_PUBLIC_KEY file does not exist at line " + lineNumber + ": " + value);
       continue;
     }
     const keyName = path.basename(resolved);
-    sshVolumes.push(resolved + ':/home/node/.ssh/' + keyName + ':ro');
+    sshVolumes.push(resolved + ":/home/node/.ssh/" + keyName + ":ro");
     sshCount++;
-  } else if (key.startsWith('env:')) {
+  } else if (key.startsWith("env:")) {
     const envKey = key.slice(4);
-    if (envKey === '') {
-      errors.push('Invalid entry at line ' + lineNumber + ': \'env:\' requires a key name after the prefix');
+    if (envKey === "") {
+      errors.push(
+        "Invalid entry at line " + lineNumber + ": 'env:' requires a key name after the prefix",
+      );
       continue;
     }
-    envVars.push(envKey + '=' + value);
+    envVars.push(envKey + "=" + value);
     envCount++;
   } else {
     if (!/^[a-zA-Z0-9._-]+$/.test(key)) {
-      errors.push('Invalid key \'' + key + '\' at line ' + lineNumber + ': must be a known config key or a valid project name');
-      errors.push('Allowed characters for project names: letters, numbers, dot, underscore, hyphen');
+      errors.push(
+        "Invalid key '" +
+          key +
+          "' at line " +
+          lineNumber +
+          ": must be a known config key or a valid project name",
+      );
+      errors.push(
+        "Allowed characters for project names: letters, numbers, dot, underscore, hyphen",
+      );
       continue;
     }
 
     if (seenNames.has(key)) {
-      errors.push('Duplicate project name \'' + key + '\' at line ' + lineNumber);
+      errors.push("Duplicate project name '" + key + "' at line " + lineNumber);
       continue;
     }
     seenNames.add(key);
 
     const resolved = resolveDirPath(value, configDir);
     if (!resolved) {
-      errors.push('Host path does not exist for \'' + key + '\' at line ' + lineNumber + ': ' + value);
-      if (!value.includes('/') && !value.startsWith('~') && !value.startsWith('.')) {
-        errors.push('Hint: if you meant to set an environment variable, use \'env:' + key + '=' + value + '\'');
+      errors.push(
+        "Host path does not exist for '" + key + "' at line " + lineNumber + ": " + value,
+      );
+      if (!value.includes("/") && !value.startsWith("~") && !value.startsWith(".")) {
+        errors.push(
+          "Hint: if you meant to set an environment variable, use 'env:" + key + "=" + value + "'",
+        );
       }
       continue;
     }
-    projectVolumes.push(resolved + ':' + workspaceRoot + '/' + key);
+    projectVolumes.push(resolved + ":" + workspaceRoot + "/" + key);
     projectCount++;
   }
 }
@@ -149,23 +163,23 @@ if (errors.length > 0) {
   process.exit(1);
 }
 
-let yaml = '';
-yaml += '# Generated by scripts/generate-compose-override.js\n';
-yaml += '# Source manifest: ' + configFile + '\n';
+let yaml = "";
+yaml += "# Generated by scripts/generate-compose-override.js\n";
+yaml += "# Source manifest: " + configFile + "\n";
 
 if (envCount > 0 || sshCount > 0 || projectCount > 0) {
-  yaml += 'services:\n';
-  yaml += '  ' + serviceName + ':\n';
+  yaml += "services:\n";
+  yaml += "  " + serviceName + ":\n";
 
   if (envCount > 0) {
-    yaml += '    environment:\n';
+    yaml += "    environment:\n";
     for (const v of envVars) {
       yaml += '      - "' + escapeYaml(v) + '"\n';
     }
   }
 
   if (sshCount > 0 || projectCount > 0) {
-    yaml += '    volumes:\n';
+    yaml += "    volumes:\n";
     for (const v of sshVolumes) {
       yaml += '      - "' + escapeYaml(v) + '"\n';
     }
@@ -174,8 +188,18 @@ if (envCount > 0 || sshCount > 0 || projectCount > 0) {
     }
   }
 } else {
-  yaml += '# No overrides configured\n';
+  yaml += "# No overrides configured\n";
 }
 
-fs.writeFileSync(outputFile, yaml, 'utf8');
-console.log('Generated ' + outputFile + ' with ' + projectCount + ' project mount(s), ' + sshCount + ' SSH mount(s), ' + envCount + ' env var(s).');
+fs.writeFileSync(outputFile, yaml, "utf8");
+console.log(
+  "Generated " +
+    outputFile +
+    " with " +
+    projectCount +
+    " project mount(s), " +
+    sshCount +
+    " SSH mount(s), " +
+    envCount +
+    " env var(s).",
+);
